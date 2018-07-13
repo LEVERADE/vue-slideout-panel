@@ -1,5 +1,5 @@
 /*!
- * vue2-slideout-panel v0.4.0 (https://github.com/officert/vue-slideout-panel)
+ * vue2-slideout-panel v0.6.0 (https://github.com/officert/vue-slideout-panel)
  * (c) 2018 Tim Officer
  * Released under the MIT License.
  */
@@ -205,7 +205,7 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.vueSlideoutPanelService = exports.VueSlideoutPanel = undefined;
+exports.VueSlideoutPanelService = exports.VueSlideoutPanel = undefined;
 
 var _SlideoutPanel = __webpack_require__(4);
 
@@ -218,7 +218,7 @@ var _service2 = _interopRequireDefault(_service);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.VueSlideoutPanel = _SlideoutPanel2.default;
-exports.vueSlideoutPanelService = _service2.default;
+exports.VueSlideoutPanelService = _service2.default;
 
 /***/ }),
 /* 4 */
@@ -253,7 +253,7 @@ var content = __webpack_require__(6);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(8)("081f8195", content, true, {});
+var update = __webpack_require__(8)("25c37248", content, true, {});
 
 /***/ }),
 /* 6 */
@@ -264,7 +264,7 @@ exports = module.exports = __webpack_require__(7)(false);
 
 
 // module
-exports.push([module.i, ".slideout-panel-open{overflow:hidden}.slideout-panel{display:block;transition:opacity .15s}.slideout-panel.fadeIn-enter .slideout-panel-bg{opacity:0}.slideout-panel.fadeIn-enter-to .slideout-panel-bg,.slideout-panel.fadeIn-leave .slideout-panel-bg{opacity:1}.slideout-panel.fadeIn-leave-to .slideout-panel-bg{opacity:0}.slideout-panel .slideout-panel-bg{position:fixed;z-index:1000;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.5);transition:opacity .4s ease;overflow-y:hidden;z-index:100}.slideout-panel .slideout-wrapper{position:static}.slideout-panel .slideout-wrapper .slideout{height:100%;position:fixed;top:0;bottom:0;background:#fff;transition:transform .18s ease-out;overflow-y:auto}.slideout-panel .slideout-wrapper .slideout.open-on-left{right:auto;left:0}.slideout-panel .slideout-wrapper .slideout.open-on-left.slideIn-enter{transform:translateX(-100%)}.slideout-panel .slideout-wrapper .slideout.open-on-left.slideIn-enter-to,.slideout-panel .slideout-wrapper .slideout.open-on-left.slideIn-leave{transform:translateX(0)}.slideout-panel .slideout-wrapper .slideout.open-on-left.slideIn-leave-to{transform:translateX(-100%)}.slideout-panel .slideout-wrapper .slideout.open-on-right{right:0;left:auto}.slideout-panel .slideout-wrapper .slideout.open-on-right.slideIn-enter{transform:translateX(100%)}.slideout-panel .slideout-wrapper .slideout.open-on-right.slideIn-enter-to,.slideout-panel .slideout-wrapper .slideout.open-on-right.slideIn-leave{transform:translateX(0)}.slideout-panel .slideout-wrapper .slideout.open-on-right.slideIn-leave-to{transform:translateX(100%)}", ""]);
+exports.push([module.i, ".slideout-panel{display:block;transition:opacity .15s}.slideout-panel.fadeIn-enter .slideout-panel-bg{opacity:0}.slideout-panel.fadeIn-enter-to .slideout-panel-bg,.slideout-panel.fadeIn-leave .slideout-panel-bg{opacity:1}.slideout-panel.fadeIn-leave-to .slideout-panel-bg{opacity:0}.slideout-panel .slideout-panel-bg{position:fixed;z-index:1000;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.5);transition:opacity .4s ease;overflow-y:hidden;z-index:100}.slideout-panel .slideout-wrapper{position:static}.slideout-panel .slideout-wrapper .slideout{height:100%;position:fixed;top:0;bottom:0;background:#fff;transition:transform .18s ease-out;overflow-y:auto}.slideout-panel .slideout-wrapper .slideout.open-on-left{right:auto;left:0}.slideout-panel .slideout-wrapper .slideout.open-on-left.slideIn-enter{transform:translateX(-100%)}.slideout-panel .slideout-wrapper .slideout.open-on-left.slideIn-enter-to,.slideout-panel .slideout-wrapper .slideout.open-on-left.slideIn-leave{transform:translateX(0)}.slideout-panel .slideout-wrapper .slideout.open-on-left.slideIn-leave-to{transform:translateX(-100%)}.slideout-panel .slideout-wrapper .slideout.open-on-right{right:0;left:auto}.slideout-panel .slideout-wrapper .slideout.open-on-right.slideIn-enter{transform:translateX(100%)}.slideout-panel .slideout-wrapper .slideout.open-on-right.slideIn-enter-to,.slideout-panel .slideout-wrapper .slideout.open-on-right.slideIn-leave{transform:translateX(0)}.slideout-panel .slideout-wrapper .slideout.open-on-right.slideIn-leave-to{transform:translateX(100%)}", ""]);
 
 // exports
 
@@ -688,16 +688,23 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var vm = {
   name: 'slideout-panel',
-  components: {},
   data: function data() {
     return {
       visible: false,
       panelsVisible: false,
-      panels: []
+      panels: [],
+      zIndexBg: 99
     };
   },
 
   methods: {
+    onPanelFullyClosed: function onPanelFullyClosed(el) {
+      var lastPanel = this.panels[this.panels.length - 1];
+      if (lastPanel !== undefined) {
+        lastPanel.styles['z-index'] += 1;
+        this.zIndexBg = lastPanel.styles['z-index'] - 1;
+      }
+    },
     getPanelClasses: function getPanelClasses(panel) {
       var panelClasses = {};
 
@@ -707,6 +714,8 @@ var vm = {
         panelClasses['open-on-right'] = true;
       }
 
+      if (panel.cssClass) panelClasses[panel.cssClass] = true;
+
       return panelClasses;
     },
     onCloseComponent: function onCloseComponent(data) {
@@ -715,25 +724,40 @@ var vm = {
     closeCurrentPanel: function closeCurrentPanel(data) {
       var currentPanel = this.panels[this.panels.length - 1];
 
-      _eventBus2.default.$emit('hideSlideOutPanel-' + currentPanel.id, {
-        id: currentPanel.id,
-        data: data
-      });
+      if (currentPanel !== undefined) {
 
-      var index = this.panels.indexOf(currentPanel);
+        _eventBus2.default.$emit('hideSlideOutPanel-' + currentPanel.id, {
+          id: currentPanel.id,
+          data: data
+        });
 
-      this.panels.splice(index, 1);
+        var index = this.panels.indexOf(currentPanel);
 
-      if (!this.panels || this.panels.length === 0) {
-        this.onLastPanelDestroyed();
+        this.panels.splice(index, 1);
+
+        if (!this.panels || this.panels.length === 0) {
+          this.onLastPanelDestroyed();
+        }
       }
     },
     onShowSlideOutPanel: function onShowSlideOutPanel(panel) {
-      panel.styles = {
-        'z-index': this.panels.length + 100
-      };
+      panel.styles = {};
 
-      if (!panel.width) panel.styles.width = '900px';else if (!panel.width.endsWith || !panel.width.endsWith('px')) panel.styles.width = panel.width + 'px';
+      var zIndex = 100;
+      if (panel.zIndex !== undefined) {
+        zIndex = Number(panel.zIndex);
+      }
+
+      this.panels.forEach(function (item, index) {
+        item.styles['z-index'] = zIndex + index;
+      });
+
+      panel.styles['z-index'] = zIndex + this.panels.length + 1;
+      this.zIndexBg = panel.styles['z-index'] - 1;
+
+      if (panel.width !== 'auto') {
+        if (panel.width === undefined) panel.styles.width = '900px';else if (isNaN(panel.width)) panel.styles.width = panel.width;else panel.styles.width = panel.width + 'px';
+      }
 
       this.panels.push(panel);
 
@@ -752,7 +776,7 @@ var vm = {
 
       document.addEventListener('keydown', this.onEscapeKeypress);
 
-      document.body.className += ' slideout-panel-open';
+      document.body.className = (document.body.className + ' slideout-panel-open').trim();
     },
     onLastPanelDestroyed: function onLastPanelDestroyed() {
       var _this2 = this;
@@ -765,16 +789,16 @@ var vm = {
 
       document.removeEventListener('keydown', this.onEscapeKeypress);
 
-      document.body.className = document.body.className.replace('slideout-panel-open', '');
+      document.body.className = document.body.className.replace('slideout-panel-open', '').trim();
     },
     onBgClicked: function onBgClicked() {
-      console.log('bg clicked');
+      console.log('slideout-panel: Background clicked');
 
       this.closeCurrentPanel();
     },
     onEscapeKeypress: function onEscapeKeypress(e) {
       if (e.keyCode === 27) {
-        console.log('esc clicked');
+        console.log('slideout-panel: Escape pressed');
 
         this.closeCurrentPanel();
       }
@@ -782,9 +806,11 @@ var vm = {
   },
   created: function created() {
     _eventBus2.default.$on('showSlideOutPanel', this.onShowSlideOutPanel);
+    _eventBus2.default.$on('hideSlideOutPanel', this.closeCurrentPanel);
   },
   destroyed: function destroyed() {
     _eventBus2.default.$off('showSlideOutPanel', this.onShowSlideOutPanel);
+    _eventBus2.default.$off('hideSlideOutPanel', this.closeCurrentPanel);
   }
 };
 
@@ -11962,9 +11988,12 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       "name": "fadeIn"
     }
   }, [(_vm.visible) ? _c('div', {
-    staticClass: "slideout-panel clearfix"
+    staticClass: "slideout-panel"
   }, [_c('div', {
     staticClass: "slideout-panel-bg",
+    style: ({
+      'z-index': _vm.zIndexBg
+    }),
     on: {
       "click": _vm.onBgClicked
     }
@@ -11973,6 +12002,9 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     attrs: {
       "tag": "div",
       "name": "slideIn"
+    },
+    on: {
+      "after-leave": _vm.onPanelFullyClosed
     }
   }, _vm._l((_vm.panels), function(panel) {
     return (_vm.panelsVisible) ? _c('div', {
@@ -12038,8 +12070,13 @@ function show(options) {
   });
 }
 
+function hide() {
+  _eventBus2.default.$emit('hideSlideOutPanel');
+}
+
 exports.default = {
-  show: show
+  show: show,
+  hide: hide
 };
 module.exports = exports['default'];
 

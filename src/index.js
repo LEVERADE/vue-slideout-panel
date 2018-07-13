@@ -1,5 +1,5 @@
 import VueSlideoutPanel from './components/SlideoutPanel';
-import vueSlideoutPanelService from './service';
+import VueSlideoutPanelService from './service';
 
 // // expose component to global scope
 // if (typeof window !== 'undefined' && window.Vue) {
@@ -8,5 +8,5 @@ import vueSlideoutPanelService from './service';
 
 export {
   VueSlideoutPanel,
-  vueSlideoutPanelService
+  VueSlideoutPanelService
 };

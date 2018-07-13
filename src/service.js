@@ -27,6 +27,11 @@ function show(options) {
   });
 }
 
+function hide() {
+  eventBus.$emit('hideSlideOutPanel');
+}
+
 export default {
-  show
+  show,
+  hide
 };

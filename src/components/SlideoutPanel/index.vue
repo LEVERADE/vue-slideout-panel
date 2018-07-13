@@ -8,15 +8,22 @@ import eventBus from '../../eventBus';
 
 const vm = {
   name: 'slideout-panel',
-  components: {},
   data() {
     return {
       visible: false,
       panelsVisible: false,
-      panels: []
+      panels: [],
+      zIndexBg: 99
     };
   },
   methods: {
+    onPanelFullyClosed(el) {
+      let lastPanel = this.panels[this.panels.length - 1];
+      if (lastPanel !== undefined) {
+        lastPanel.styles['z-index'] += 1;
+        this.zIndexBg = lastPanel.styles['z-index'] - 1;
+      }
+    },
     getPanelClasses(panel) {
       const panelClasses = {};
 
@@ -36,27 +43,43 @@ const vm = {
     closeCurrentPanel(data) {
       const currentPanel = this.panels[this.panels.length - 1];
 
-      eventBus.$emit(`hideSlideOutPanel-${currentPanel.id}`, {
-        id: currentPanel.id,
-        data
-      });
+      if (currentPanel !== undefined) {
 
-      const index = this.panels.indexOf(currentPanel);
+        eventBus.$emit(`hideSlideOutPanel-${currentPanel.id}`, {
+          id: currentPanel.id,
+          data
+        });
 
-      this.panels.splice(index, 1);
+        const index = this.panels.indexOf(currentPanel);
 
-      if (!this.panels || this.panels.length === 0) {
-        this.onLastPanelDestroyed();
+        this.panels.splice(index, 1);
+
+        if (!this.panels || this.panels.length === 0) {
+          this.onLastPanelDestroyed();
+        }
+
       }
     },
     onShowSlideOutPanel(panel) {
-      panel.styles = {
-        'z-index': this.panels.length + 100
-      };
+      panel.styles = {};
 
-      if (!panel.width) panel.styles.width = '900px';
-      else if (!panel.width.endsWith || !panel.width.endsWith('px')) panel.styles.width = `${panel.width}px`;
-      else panel.styles.width = panel.width;
+      let zIndex = 100;
+      if (panel.zIndex !== undefined) {
+        zIndex = Number(panel.zIndex);
+      }
+
+      this.panels.forEach((item, index) => {
+          item.styles['z-index'] = zIndex + index;
+      });
+
+      panel.styles['z-index'] = zIndex + this.panels.length + 1;
+      this.zIndexBg = panel.styles['z-index'] - 1;
+
+      if (panel.width !== 'auto') {
+          if (panel.width === undefined) panel.styles.width = '900px';
+          else if (isNaN(panel.width)) panel.styles.width = panel.width;
+          else panel.styles.width = `${panel.width}px`;
+      }
 
       this.panels.push(panel);
 
@@ -73,7 +96,7 @@ const vm = {
 
       document.addEventListener('keydown', this.onEscapeKeypress);
 
-      document.body.className += ' slideout-panel-open';
+      document.body.className = (document.body.className + ' slideout-panel-open').trim();
     },
     onLastPanelDestroyed() {
       this.panelsVisible = false;
@@ -84,16 +107,16 @@ const vm = {
 
       document.removeEventListener('keydown', this.onEscapeKeypress);
 
-      document.body.className = document.body.className.replace('slideout-panel-open', '');
+      document.body.className = document.body.className.replace('slideout-panel-open', '').trim();
     },
     onBgClicked() {
-      console.log('bg clicked');
+      console.log('slideout-panel: Background clicked');
 
       this.closeCurrentPanel();
     },
     onEscapeKeypress(e) {
       if (e.keyCode === 27) {
-        console.log('esc clicked');
+        console.log('slideout-panel: Escape pressed');
 
         this.closeCurrentPanel();
       }
@@ -101,9 +124,11 @@ const vm = {
   },
   created() {
     eventBus.$on('showSlideOutPanel', this.onShowSlideOutPanel);
+    eventBus.$on('hideSlideOutPanel', this.closeCurrentPanel);
   },
   destroyed() {
     eventBus.$off('showSlideOutPanel', this.onShowSlideOutPanel);
+    eventBus.$off('hideSlideOutPanel', this.closeCurrentPanel);
   }
 };
 
